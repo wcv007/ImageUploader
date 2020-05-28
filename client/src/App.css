@@ -1,0 +1,33 @@
+.errorClass {
+  font-size: 13px;
+  color: red;
+  margin: 5px;
+}
+
+.imageName {
+  margin-top: 30px;
+}
+
+.horizontal {
+  object-fit: cover;
+  width: 755px;
+  height: 450px;
+}
+
+.vertical {
+  object-fit: cover;
+  width: 365px;
+  height: 450px;
+}
+
+.horizontalSmall {
+  object-fit: cover;
+  width: 365px;
+  height: 212px;
+}
+
+.gallery {
+  object-fit: cover;
+  width: 380px;
+  height: 380px;
+}

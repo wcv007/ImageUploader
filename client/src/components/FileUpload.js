@@ -5,14 +5,44 @@ import axios from "axios";
 
 const FileUpload = () => {
   const [file, setFile] = useState("");
+  const [fileSize, invalidSize] = useState(false);
   const [filename, setFilename] = useState("Choose File");
-  const [uploadedFile, setUploadedFile] = useState({});
+  const [pageType, setPage] = useState("1");
+  const [uploadedFile, setUploadedFile] = useState(null);
   const [message, setMessage] = useState("");
   const [uploadPercentage, setUploadPercentage] = useState(0);
-
+  const imageInputRef = React.useRef();
   const onChange = (e) => {
     setFile(e.target.files[0]);
     setFilename(e.target.files[0].name);
+    var _URL = window.URL || window.webkitURL;
+    var file, img;
+
+    if ((file = e.target.files[0])) {
+      img = new Image();
+      img.onload = function () {
+        if (this.width !== 1024 && this.height !== 1024) {
+          invalidSize(true);
+          imageInputRef.current.value = "";
+          setFile(null);
+          setFilename(null);
+          setUploadedFile(null);
+          setTimeout(function () {
+            invalidSize(false);
+          }, 5000);
+        }
+        // alert(this.width + " " + this.height);
+      };
+      img.onerror = function () {
+        alert("not a valid file: " + file.type);
+      };
+
+      img.src = _URL.createObjectURL(file);
+    }
+  };
+
+  const convertImage = (value) => {
+    setPage(value);
   };
 
   const onSubmit = async (e) => {
@@ -52,38 +82,96 @@ const FileUpload = () => {
   };
 
   return (
-    <Fragment>
-      {message ? <Message msg={message} /> : null}
-      <form onSubmit={onSubmit}>
-        <div className="custom-file mb-4">
-          <input
-            type="file"
-            className="custom-file-input"
-            id="customFile"
-            onChange={onChange}
-          />
-          <label className="custom-file-label" htmlFor="customFile">
-            {filename}
-          </label>
-        </div>
+    <div>
+      {pageType === "1" && (
+        <Fragment>
+          {message ? <Message msg={message} /> : null}
+          <form onSubmit={onSubmit}>
+            <div className="custom-file mb-4">
+              <input
+                type="file"
+                className="custom-file-input"
+                id="customFile"
+                onChange={onChange}
+                ref={imageInputRef}
+              />
+              <label className="custom-file-label" htmlFor="customFile">
+                {filename}
+              </label>
+              {fileSize && (
+                <div className="errorClass">
+                  Incorrect File Size. Only 1024*1024 file size is accepted.
+                </div>
+              )}
+            </div>
 
-        <Progress percentage={uploadPercentage} />
+            <Progress percentage={uploadPercentage} />
+            <input
+              type="submit"
+              value="Upload"
+              className="btn btn-primary btn-block mt-4"
+            />
+          </form>
+          {uploadedFile && (
+            <button
+              type="submit"
+              className="btn btn-dark btn-block mt-4"
+              onClick={() => convertImage("2")}
+            >
+              Convert
+            </button>
+          )}
+          {uploadedFile ? (
+            <div className="row mt-5 mb-5">
+              <div className=" m-auto">
+                <h3 className="text-center">{uploadedFile.fileName}</h3>
+                <img src={uploadedFile.filePath} alt="" />
+              </div>
+            </div>
+          ) : null}
+        </Fragment>
+      )}
 
-        <input
-          type="submit"
-          value="Upload"
-          className="btn btn-primary btn-block mt-4"
-        />
-      </form>
-      {uploadedFile ? (
-        <div className="row mt-5">
+      {pageType === "2" && uploadedFile && (
+        <div className="imageConvertDiv mb-5">
           <div className="col-md-6 m-auto">
-            <h3 className="text-center">{uploadedFile.fileName}</h3>
-            <img style={{ width: "100%" }} src={uploadedFile.filePath} alt="" />
+            <h3 className=" imageName">
+              Horizontal : 755 x 450 {uploadedFile.fileName}
+            </h3>
+            <img src={uploadedFile.filePath} alt="" className="horizontal" />
           </div>
+          <div className="col-md-6 m-auto">
+            <h3 className=" imageName">
+              Vertical : 365 x 450 {uploadedFile.fileName}
+            </h3>
+            <img src={uploadedFile.filePath} alt="" className="vertical" />
+          </div>
+          <div className="col-md-6 m-auto">
+            <h3 className=" imageName">
+              Horizontal small : 365 x 212 {uploadedFile.fileName}
+            </h3>
+            <img
+              src={uploadedFile.filePath}
+              alt=""
+              className="horizontalSmall"
+            />
+          </div>
+          <div className="col-md-6 m-auto">
+            <h3 className="imageName">
+              Gallery : 380 x 380 {uploadedFile.fileName}
+            </h3>
+            <img src={uploadedFile.filePath} alt="" className="gallery" />
+          </div>
+          <button
+            type="button"
+            class="btn btn-primary btn-block mt-4"
+            onClick={() => convertImage("1")}
+          >
+            Back
+          </button>
         </div>
-      ) : null}
-    </Fragment>
+      )}
+    </div>
   );
 };
 
